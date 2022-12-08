@@ -1,0 +1,444 @@
+<sdf version='1.6'>
+  <world name='default'>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose frame=''>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    <physics name='dart_1ms' default='1' type='dart'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <dart>
+        <solver>
+          <solver_type>pgs</solver_type>
+        </solver>
+      </dart>
+    </physics>
+    <physics name='dart_2ms' default='0' type='dart'>
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>500</real_time_update_rate>
+      <dart>
+        <solver>
+          <solver_type>pgs</solver_type>
+        </solver>
+      </dart>
+    </physics>
+    <physics name='dart_3ms' default='0' type='dart'>
+      <max_step_size>0.003</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>333</real_time_update_rate>
+      <dart>
+        <solver>
+          <solver_type>pgs</solver_type>
+        </solver>
+      </dart>
+    </physics>
+    <physics name='ode_1ms' default='0' type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <physics name='ode_2ms' default='0' type='ode'>
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>500</real_time_update_rate>
+    </physics>
+    <physics name='ode_3ms' default='0' type='ode'>
+      <max_step_size>0.003</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>333</real_time_update_rate>
+    </physics>
+    <model name='ground_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>65535</collide_bitmask>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <gravity>1</gravity>
+      </link>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <wind/>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <model name='table_c_0'>
+      <link name='link'>
+        <collision name='surface'>
+          <pose frame=''>0 0 0.755 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.913 0.913 0.04</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact/>
+            <friction>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='column'>
+          <pose frame=''>0 0 0.37 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.042 0.042 0.74</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact/>
+            <friction>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose frame=''>0 0 0.02 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.56 0.56 0.04</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact/>
+            <friction>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='surface'>
+          <pose frame=''>0 0 0.755 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.913 0.913 0.04</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/WoodFloor</name>
+            </script>
+          </material>
+        </visual>
+        <visual name='column'>
+          <pose frame=''>0 0 0.37 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.042 0.042 0.74</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <visual name='base'>
+          <pose frame=''>0 0 0.02 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.56 0.56 0.04</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <gravity>1</gravity>
+        <inertial>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+          <mass>1</mass>
+        </inertial>
+      </link>
+      <pose frame=''>1.04219 0.475776 0 0 -0 0</pose>
+    </model>
+    <model name='table_c'>
+      <link name='link'>
+        <collision name='surface'>
+          <pose frame=''>0 0 0.755 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.913 0.913 0.04</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact/>
+            <friction>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='column'>
+          <pose frame=''>0 0 0.37 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.042 0.042 0.74</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact/>
+            <friction>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose frame=''>0 0 0.02 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.56 0.56 0.04</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact/>
+            <friction>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='surface'>
+          <pose frame=''>0 0 0.755 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.913 0.913 0.04</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/WoodFloor</name>
+            </script>
+          </material>
+        </visual>
+        <visual name='column'>
+          <pose frame=''>0 0 0.37 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.042 0.042 0.74</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <visual name='base'>
+          <pose frame=''>0 0 0.02 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.56 0.56 0.04</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <gravity>1</gravity>
+        <inertial>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+          <mass>1</mass>
+        </inertial>
+      </link>
+      <pose frame=''>1.00617 -0.703303 0 0 -0 0</pose>
+    </model>
+    <model name='jar'>
+      <link name='link'>
+        <gravity>1</gravity>
+        <inertial>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <mass>0.2</mass>
+          <inertia>
+            <ixx>0.00079</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00079</iyy>
+            <iyz>0</iyz>
+            <izz>0.00025</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://jar_marker/meshes/jar_marker.dae</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>1</kd>
+                <min_depth>0.001</min_depth>
+                <max_vel>0.1</max_vel>
+              </ode>
+            </contact>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://jar_marker/meshes/jar_marker.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+      </link>
+      <pose frame=''>0.684916 -0.436929 0 0 -0 0</pose>
+    </model>
+    <state world_name='default'>
+      <sim_time>1165 976000000</sim_time>
+      <real_time>0 0</real_time>
+      <wall_time>1670489086 430229644</wall_time>
+      <iterations>582988</iterations>
+      <model name='ground_plane'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jar'>
+        <pose frame=''>0.684916 -0.436929 0.880702 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>0.684916 -0.436929 0.880702 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='table_c'>
+        <pose frame=''>1.05976 -0.671796 -1e-06 -0 1e-06 -9.6e-05</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>1.05976 -0.671796 -1e-06 -0 1e-06 -9.6e-05</pose>
+          <velocity>-4e-06 -1e-06 2.9e-05 0.000336 -0.000438 -8e-06</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='table_c_0'>
+        <pose frame=''>1.04219 0.475776 -1e-06 5e-06 2e-06 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>1.04219 0.475776 -1e-06 5e-06 2e-06 0</pose>
+          <velocity>0 -0 9e-06 -2e-05 1e-06 -0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose frame=''>0 0 10 0 -0 0</pose>
+      </light>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>-3.40967 -4.77355 3.73629 0 0.559643 0.852194</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+  </world>
+</sdf>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="use_kinect" default="true" />
-  <arg name="world_name" default="$(find stero_manipulation)/data/gazebo/worlds/stero_blank.world" />
+  <arg name="world_name" default="$(find stero_manipulation)/data/gazebo/models/stero_world_lab1.world" />  
   <arg name="GAZEBO_MODEL_PATH" default="" />
   <arg name="GAZEBO_RESOURCE_PATH" default="" />
   <arg name="profile" default="dart_2ms" />
@@ -23,6 +23,10 @@
     <arg name="state_snapshot" value="$(arg state_snapshot)" />
     <arg name="spawn_velma" value="$(arg spawn_velma)" />
     <arg name="ORO_LOGLEVEL" value="$(arg ORO_LOGLEVEL)" />
+
   </include>
+    <arg name="rviz"     default="true"/>
+    <node name="rviz" pkg="rviz" type="rviz" if="$(arg rviz)"
+       args="-d $(find stero_manipulation)/data/rviz_config.rviz"/>
 
 </launch>
