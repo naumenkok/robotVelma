@@ -18,9 +18,7 @@ from shape_msgs.msg import SolidPrimitive
 
 class Velma:
     planner = None
-    side = "right"
-
-
+    
     def __init__(self, velma):
         self.velma = velma
 
@@ -84,12 +82,12 @@ class Velma:
                 print ("ERROR: core_cs not in state cart imp")
             print("Finished cart_imp mode")
 
-    def GetTWEForObj(self, z_off=0, x_off=0,y_off=0):
+    def GetTWEForObj(self):
         print("Get gripper position for object")
         T_W_O = self.getObject1Position()
         ourRotation = PyKDL.Rotation.EulerZYX(0,0,0)
         T_W_O=PyKDL.Frame(ourRotation,T_W_O.p)
-        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(0), math.radians(0)), PyKDL.Vector(x_off, y_off, z_off))
+        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(0), math.radians(0)), PyKDL.Vector(0, 0, 0.1))
         
         T_G_P=self.velma.getTf("Gr", "Pr")
         T_P_E=self.velma.getTf("Pr", "Er")
@@ -97,19 +95,23 @@ class Velma:
         T_W_E = T_W_O*T_O_G*T_G_P*T_P_E
         return T_W_E
 
-    def GetTWEForTab(self, z_off=0, x_off=0,y_off=0):
+    def GetTWEForTab(self, side = "right"):
         print("Get gripper position not for object")
-        T_W_O = self.getTable1Position()
+        if side == "right":
+            T_W_O = self.getTable1Position()
+            T_G_P=self.velma.getTf("Gr", "Pr")
+            T_P_E=self.velma.getTf("Pr", "Er")
+        elif side == "left":
+            T_W_O = self.getTable2Position()
+            T_G_P=self.velma.getTf("Gl", "Pl")
+            T_P_E=self.velma.getTf("Pl", "El")
         ourRotation = PyKDL.Rotation.EulerZYX(0,0,0)
         T_W_O=PyKDL.Frame(ourRotation,T_W_O.p)
-        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(0), math.radians(0)), PyKDL.Vector(x_off, y_off, z_off))
-        
-        T_G_P=self.velma.getTf("Gr", "Pr")
-        T_P_E=self.velma.getTf("Pr", "Er")
+        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(0), math.radians(0)), PyKDL.Vector(0, 0, 0.2))
         T_W_E = T_W_O*T_O_G*T_G_P*T_P_E
         return T_W_E
         
-    def GetIK(self, T_W_E):
+    def GetIK(self, T_W_E, side = "right"):
         solver = KinematicsSolverVelma()
         if not solver:
             print("Failed to initialize IK solver")
@@ -120,7 +122,7 @@ class Velma:
         f3 = True
         for q_torso in np.linspace(-math.pi/2, math.pi/2, 20):
             for elbow_ang in np.linspace(-math.pi, math.pi, 20):
-                arm_q = solver.calculateIkArm(self.side, T_W_E, q_torso, elbow_ang, f1, f2, f3)
+                arm_q = solver.calculateIkArm(side, T_W_E, q_torso, elbow_ang, f1, f2, f3)
                 if not arm_q[0] is None:
                     q_dict = {}
                     q_dict["torso_0_joint"] = q_torso
@@ -136,24 +138,18 @@ class Velma:
         print("Possible results: ", len(ik))
         return ik
 
-    def getPlanAndMove(self, ik):
+    def getPlanAndMove(self, ik, side = "right"):
         rospy.loginfo("Planning trajectory...")
         self.velma.moveJointImpToCurrentPos(start_time=0.2)
 
-        gc = [qMapToConstraints(i, 0.3, group=self.velma.getJointGroup("{}_arm_torso".format(self.side)))for i in ik]
+        gc = [qMapToConstraints(i, 0.16, group=self.velma.getJointGroup("{}_arm_torso".format(side)))for i in ik]
         for i in range(15):
             js = self.velma.getLastJointState()[1]
             traj = self.planner.plan(js, gc, "impedance_joints",max_velocity_scaling_factor=0.15,planner_id="RRTConnect", num_planning_attempts = 20)
             if traj == None:
-
-                print("Executing trajectory1...")
                 continue
-                
-
-            # Wykonanie planu ruchu
-            rospy.loginfo("Executing trajectory2...")
             if not self.velma.moveJointTraj(traj, start_time=0.5,
-                                        position_tol = 10.0/180.0 * math.pi,
+                                        position_tol = 10.0/180.0*math.pi,
                                         velocity_tol = 10.0/180.0*math.pi ):
                 exitError(5)
             if self.velma.waitForJoint() == 0:
@@ -161,6 +157,46 @@ class Velma:
             else:
                 rospy.loginfo("Failed to execute trajectory")
 
+        self.jimpCimpSwitch(0)
+
+        T_B_Wr = self.velma.getTf("B", "Wr")
+        T_B_Wl = self.velma.getTf("B", "Wl")
+        self.velma.moveCartImpRight([T_B_Wr], [0.5], [PyKDL.Frame()], [0.5], None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
+        self.velma.moveCartImpLeft([T_B_Wl], [0.5], [PyKDL.Frame()], [0.5], None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
+        
+        goal=self.GetTWEForObj()
+        if side == "right":
+            self.velma.moveCartImpRight([goal], [2.0], None, None, None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
+            self.velma.waitForEffectorRight()
+        elif side == "left":
+            self.velma.moveCartImpLeft([goal], [2.0], None, None, None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
+            self.velma.waitForEffectorLeft()
+        rospy.sleep(0.5)
+
+    def closeGripper(self, side = "right"):
+        q = [math.radians(180), math.radians(180), math.radians(180), math.radians(0)]
+        if side == "right":
+            self.velma.moveHandRight(q,[10,10,10,10],[0,0,0,0],5,True)
+        elif side == "left":
+            self.velma.moveHandLeft(q,[10,10,10,10],[10,10,10,10],5,True)
+        print("Gripper closed")
+
+    def openGripper(self, side = "right"):
+        q = [math.radians(0), math.radians(0), math.radians(0), math.radians(0)]
+        if side == "right":
+            self.velma.moveHandRight(q,[10,10,10,10],[10,10,10,10],5,False)
+        elif side == "left":
+            self.velma.moveHandLeft(q,[10,10,10,10],[0,0,0,0],5,False)
+        print("Gripper opened")
+
+def getSide(my_tf):
+        objPose = pm.toMsg(my_tf)
+        objPosition = objPose.position.y
+        if objPosition<0:
+            side = "right"
+        elif objPosition>0:
+            side = "left"
+        return side
 
 
 if __name__ == "__main__":
@@ -171,11 +207,19 @@ if __name__ == "__main__":
     print("Running python interface for Velma...")
     velma = Velma(VelmaInterface())
     velma.homing()
+    my_tf = velma.getObject1Position()
+    side = getSide(my_tf)
+    velma.openGripper(side)
     velma.initializePlanner()
     velma.jimpCimpSwitch(1)
-    my_tf = velma.getObject1Position()
     my_twe = velma.GetTWEForObj()
-    my_ik = velma.GetIK(my_twe)
-    velma.getPlanAndMove(my_ik)
+    my_ik = velma.GetIK(my_twe, side)
+    velma.getPlanAndMove(my_ik, side)
+    velma.closeGripper(side)
+   # start = {'torso_0_joint':0, 'right_arm_0_joint':-0.3, 'right_arm_1_joint':-1.8,
+   #    'right_arm_2_joint':1.25, 'right_arm_3_joint':0.85, 'right_arm_4_joint':0, 'right_arm_5_joint':-0.5,
+   #    'right_arm_6_joint':0, 'left_arm_0_joint':0.3, 'left_arm_1_joint':1.8, 'left_arm_2_joint':-1.25,
+   #    'left_arm_3_joint':-0.85, 'left_arm_4_joint':0, 'left_arm_5_joint':0.5, 'left_arm_6_joint':0 }
+   # velma.getPlanAndMove(start, "left")
     print("OK")
     exitError(0)

@@ -27,10 +27,10 @@
   </include>
 
   
-    <include file="$(find velma_common)/launch/octomap_offline_server.launch">
-    <arg name="octomap_file" value="$(find stero_manipulation)/data/map_ob1_pr1.bt"/>
+  <include file="$(find velma_common)/launch/octomap_offline_server.launch">
+    <arg name="octomap_file" value="$(find stero_manipulation)/data/new_map.bt"/>
   </include>
-  
+ 
 
   <include file="$(find rcprg_gazebo_utils)/launch/gazebo_publish_ros_tf_object.launch">
       <arg name="link_name" value="object1::link"/>
