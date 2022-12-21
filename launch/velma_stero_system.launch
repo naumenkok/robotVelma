@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="use_kinect" default="true" />
-  <arg name="world_name" default="$(find stero_manipulation)/data/gazebo/models/stero_world_pr1_left.world" />  
+  <arg name="world_name" default="$(find stero_manipulation)/data/gazebo/models/aaa.world" />  
   <arg name="GAZEBO_MODEL_PATH" default="" />
   <arg name="GAZEBO_RESOURCE_PATH" default="" />
   <arg name="profile" default="dart_2ms" />
@@ -26,11 +26,9 @@
 
   </include>
 
- 
   <include file="$(find velma_common)/launch/octomap_offline_server.launch">
-    <arg name="octomap_file" value="$(find stero_manipulation)/data/left_obj_more.bt"/>
+    <arg name="octomap_file" value="$(find stero_manipulation)/data/aaa.bt"/>
   </include>
-
 
   <include file="$(find rcprg_gazebo_utils)/launch/gazebo_publish_ros_tf_object.launch">
       <arg name="link_name" value="object1::link"/>

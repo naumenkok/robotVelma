@@ -47,160 +47,154 @@ class Velma:
         self.velma.waitForInit(timeout_s=5.0)
         oml = OctomapListener("/octomap_binary")
         if not oml:
-            print("ERROR: not initializing octomap")
+            print("ERROR: no octomap initialized")
         print("Octomap initialization complete")
         rospy.sleep(1.0)
         octomap = oml.getOctomap(timeout_s=5.0)
         if not octomap:
             print("ERROR: not get octomap")
         if not ourPlanner.processWorld(octomap):
-            print("ERROR: not process world octomap") 
+            print("ERROR: not world octomap") 
         self.planner = ourPlanner
 
-    def jimpCimpSwitch(self, modeSwitch):
+    def jimpCimpSwitch(self, modeSwitch, side='right'):
 
-        if modeSwitch == 1:   #joint imp
-            print("Jnt_imp mode switch")
+        if modeSwitch == 1:
+            print("Jnt_imp: switched")
             self.velma.moveJointImpToCurrentPos(start_time=0.5)
             if self.velma.waitForJoint():
                 print("ERROR: jimp wait for joint")
 
-            rospy.sleep(0.5)
-            diag = self.velma.getCoreCsDiag()
-            if not diag.inStateJntImp():
+            rospy.sleep(1.0)
+            if not self.velma.getCoreCsDiag().inStateJntImp():
                 print("ERROR: core_cs not in state jnt imp")
-            print("Finished jnt_imp mode")
+            else:
+                print("Finished jnt_imp mode")
 
-        elif modeSwitch == 0:  #cart imp
-            print ("Cart_imp mode switch")
-            self.velma.moveCartImpRightCurrentPos(start_time=0.5)
-            self.velma.waitForEffectorRight()
+        elif modeSwitch == 0:
+            print ("Cart_imp: switched")
             rospy.sleep(0.5)
-
-            diag = self.velma.getCoreCsDiag()
-            if not diag.inStateCartImp():
+            self.velma.moveCartImpRightCurrentPos(start_time=0.5)
+            rospy.sleep(0.5)
+            if self.velma.waitForEffectorRight():
+                print("ERROR: Cart wait for joint")
+            rospy.sleep(0.5)
+            if not self.velma.getCoreCsDiag().inStateCartImp():
                 print ("ERROR: core_cs not in state cart imp")
-            print("Finished cart_imp mode")
+            else:
+                print("Finished cart_imp mode")
 
-    def getTWEForObj(self, offsetZ = 0.3, side = "right"):
-        print("Get gripper position for object")
+    def getTWEForObj(self, offsetZ = 0.2, side = 'right'):
+        print("Object: getting position")
         T_W_O = self.getObject1Position()
         ourRotation = PyKDL.Rotation.EulerZYX(0,0,0)
         T_W_O=PyKDL.Frame(ourRotation,T_W_O.p)
-        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(0), math.radians(0), math.radians(0)), PyKDL.Vector(0, 0, offsetZ))
-        if side == "right":
+        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(0), math.radians(0)), PyKDL.Vector(0, 0, offsetZ))
+        if side == 'right':
             T_G_P=self.velma.getTf("Gr", "Pr")
             T_P_E=self.velma.getTf("Pr", "Er")
-        elif side == "left":
+        elif side == 'left':
             T_G_P=self.velma.getTf("Gl", "Pl")
             T_P_E=self.velma.getTf("Pl", "El")
         T_W_E = T_W_O*T_O_G*T_G_P*T_P_E
         return T_W_E
 
-    def getTWEForTab(self, offsetX = -0.4, offsetY = -0.4, offsetZ = 0.9, side = "right"):
-        print("Get gripper position not for object")
-        if side == "right":
+    def getTWEForTab(self, offsetX = -0.4, offsetY = -0.3, offsetZ = 1.1, side = 'right'):
+        print("Table: getting position")
+        if side == 'right':
             T_W_O = self.getTable1Position()
-            T_G_P=self.velma.getTf("Gr", "Pr")
-            T_P_E=self.velma.getTf("Pr", "Er")
+            T_G_P = self.velma.getTf("Gr", "Pr")
+            T_P_E = self.velma.getTf("Pr", "Er")
             offsetY = 0.4
-        elif side == "left":
+        elif side == 'left':
             T_W_O = self.getTable2Position()
-            T_G_P=self.velma.getTf("Gl", "Pl")
-            T_P_E=self.velma.getTf("Pl", "El")
+            T_G_P = self.velma.getTf("Gl", "Pl")
+            T_P_E = self.velma.getTf("Pl", "El")
         ourRotation = PyKDL.Rotation.EulerZYX(0,0,0)
-        T_W_O=PyKDL.Frame(ourRotation,T_W_O.p)
-        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(0), math.radians(0)), PyKDL.Vector(offsetX, offsetY, offsetZ))
+        T_W_O = PyKDL.Frame(ourRotation,T_W_O.p)
+        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(-180), math.radians(0)), PyKDL.Vector(offsetX, offsetY, offsetZ))
         T_W_E = T_W_O*T_O_G*T_G_P*T_P_E
         return T_W_E
         
-    def getIK(self, T_W_E, side = "right"):
+    def getIK(self, T_W_E, side = 'right'):
         solver = KinematicsSolverVelma()
-        (solver.getArmLimits())
+        solver.getArmLimits()
         if not solver:
-            print("Failed to initialize IK solver")
-        print("IK solver initialization completed")
+            print("Inverse kinematic: fail")
+        print("Inverse kinematic: initialized")
         ik=[]
         f1 = True
         f2 = True
         f3 = True
         for q_torso in np.linspace(-math.pi/2, math.pi/2, 24):
-            for elbow_ang in np.linspace(-math.pi, math.pi, 30):
+            for elbow_ang in np.linspace(-math.pi, math.pi, 24):
                 arm_q = solver.calculateIkArm(side, T_W_E, q_torso, elbow_ang, f1, f2, f3)
-                if not arm_q[0] is None:
-                    q_dict = {}
-                    q_dict["torso_0_joint"] = q_torso
-
+                q_dict = {}
+                if arm_q[0]:
                     for i in range(len(arm_q)):
-                            q_dict['{}_arm_{}_joint'.format(side, i)] = arm_q[i]
+                        joint_name=side+'_arm_'+str(i)+'_joint'
+                        q_dict[joint_name] = arm_q[i]
+                    q_dict["torso_0_joint"] = q_torso
                     ik.append(q_dict)
                 if rospy.is_shutdown():
                     break
             if rospy.is_shutdown():
                 break
-        print("Inverse kinematic has been solved")
-        print("Possible results: ", len(ik))
+        print("Inverse kinematic: done")
         return ik
 
-    def getPlanAndMove(self, ik, side = "right"):
-        rospy.loginfo("Planning trajectory...")
+    def getPlanAndMove(self, ik, side = 'right'):
+        rospy.loginfo("Start: planning")
         self.velma.moveJointImpToCurrentPos(start_time=0.2)
-
-        gc = [qMapToConstraints(i, 0.25, group=self.velma.getJointGroup("{}_arm_torso".format(side)))for i in ik]
-        for i in range(15):
-            js = self.velma.getLastJointState()[-1]
-            traj = self.planner.plan(js, gc, "impedance_joints",max_velocity_scaling_factor=0.15,planner_id="RRTConnect", num_planning_attempts = 20)
-            if traj == None:
-                continue
-            if not self.velma.moveJointTraj(traj, start_time=0.5,
-                                        position_tol = 10.0/180.0*math.pi,
-                                        velocity_tol = 10.0/180.0*math.pi ):
+        gc=[]
+        for j in ik:
+            gc.append(qMapToConstraints(j, 0.2, group=self.velma.getJointGroup(side+"_arm_torso")))
+        for i in range(3):
+            traj = self.planner.plan(self.velma.getLastJointState()[1], gc, side+"_arm_torso",max_velocity_scaling_factor=0.15,planner_id="RRTConnect", num_planning_attempts = 20)
+            if not self.velma.moveJointTraj(traj, start_time=1.0, position_tol = 10.0/180.0*math.pi, velocity_tol = 10.0/180.0*math.pi):
                 exitError(5)
-            if self.velma.waitForJoint() == 0:
+            a=self.velma.waitForJoint()
+            if not a:
+                print("Done")
                 break
-            else:
-                rospy.loginfo("Failed to execute trajectory")
 
-    def moveCimp(self, offsetZ = 0.3, side = "right", table=False):
-        self.jimpCimpSwitch(0)
-
+    def moveCimp(self, offsetZ = 0.1, side = 'right', table=False):
+        self.jimpCimpSwitch(0, handSide)
+        N=None
         T_B_Wr = self.velma.getTf("B", "Wr")
         T_B_Wl = self.velma.getTf("B", "Wl")
-        self.velma.moveCartImpRight([T_B_Wr], [0.5], [PyKDL.Frame()], [0.5], None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
-        self.velma.moveCartImpLeft([T_B_Wl], [0.5], [PyKDL.Frame()], [0.5], None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
+        pdl=PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5))
+        self.velma.moveCartImpRight([T_B_Wr], [0.2], [PyKDL.Frame()], [0.5], N, N, pdl, start_time=0.5)
+        self.velma.moveCartImpLeft([T_B_Wl], [0.2], [PyKDL.Frame()], [0.5], N, N, pdl, start_time=0.5)
         
         if table:
-            if side == "right":
-                goal=self.getTWEForTab(side = "left")
-            elif side == "left":
-                goal=self.getTWEForTab(side = "right")
+            if side == 'right':
+                goal=self.getTWEForTab(side = 'left')
+            elif side == 'left':
+                goal=self.getTWEForTab(side = 'right')
         else:
             goal=self.getTWEForObj(offsetZ, side)
-        if side == "right":
-            self.velma.moveCartImpRight([goal], [2.0], None, None, None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
-            self.velma.waitForEffectorRight()
-        elif side == "left":
-            self.velma.moveCartImpLeft([goal], [2.0], None, None, None, None, PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5)), start_time=0.5)
-            self.velma.waitForEffectorLeft()
+        self.velma.moveCartImp(side, [goal], [2.0], N, N, N, N, pdl, start_time=0.5)
+        self.velma.waitForEffector(side)
         rospy.sleep(0.5)
 
-    def closeGripper(self, side = "right"):
+    def closeGripper(self, side = 'right'):
         q = [math.radians(180), math.radians(180), math.radians(180), math.radians(0)]
-        if side == "right":
-            self.velma.moveHandRight(q,[10,10,10,10],[0,0,0,0],5,True)
-        elif side == "left":
-            self.velma.moveHandLeft(q,[10,10,10,10],[10,10,10,10],5,True)
-        print("Gripper closed")
+        self.velma.moveHand(side,q,[1, 1, 1, 1],[0.1, 0.1, 0.1, 0.1],0.1,True)
+        if self.velma.waitForHand(side) != 0:
+            exitError(4)
+        else:
+            print("Gripper closed")
 
-    def openGripper(self, side = "right"):
+    def openGripper(self, side = 'right'):
         q = [math.radians(0), math.radians(0), math.radians(0), math.radians(0)]
-        if side == "right":
-            self.velma.moveHandRight(q,[10,10,10,10],[10,10,10,10],5,False)
-        elif side == "left":
-            self.velma.moveHandLeft(q,[10,10,10,10],[0,0,0,0],5,False)
-        print("Gripper opened")
+        self.velma.moveHand(side,q,[1, 1, 1, 1],[0.1, 0.1, 0.1, 0.1],0.1)
+        if self.velma.waitForHand(side) != 0:
+            exitError(4)
+        else:
+            print("Gripper opened")
 
-    def moveUp(self, side = "right"):
+    def moveUp(self, side = 'right'):
         self.moveCimp(0.4, side)
 
     def startPos(self):
@@ -231,9 +225,8 @@ def getSide(my_tf):
 if __name__ == "__main__":
 
     rospy.init_node('pp', anonymous=False)
-    rospy.sleep(0.5)
 
-    print("Running python interface for Velma...")
+    print("Start.")
     velma = Velma(VelmaInterface())
     velma.homing()
     velma.initializePlanner()
@@ -242,15 +235,15 @@ if __name__ == "__main__":
     print(pm.toMsg(my_tf))
     handSide = getSide(my_tf)
     velma.openGripper(handSide)
-    print(handSide)
-    velma.jimpCimpSwitch(1)
+    print("Object is on "+handSide)
+    velma.jimpCimpSwitch(1, handSide)
     my_twe = velma.getTWEForObj(side = handSide)
     my_ik = velma.getIK(my_twe, handSide)
     velma.getPlanAndMove(my_ik, handSide)
     velma.moveCimp(side = handSide)
     velma.closeGripper(handSide)
     velma.moveUp(handSide)
-    velma.jimpCimpSwitch(1)
+    velma.jimpCimpSwitch(1, handSide)
     if handSide == "right":
         my_twe_tabl = velma.getTWEForTab(side = "left")
     elif handSide == "left":
