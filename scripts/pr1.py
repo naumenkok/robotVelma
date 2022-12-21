@@ -99,13 +99,14 @@ class Velma:
         T_W_E = T_W_O*T_O_G*T_G_P*T_P_E
         return T_W_E
 
-    def getTWEForTab(self, offsetX = -0.4, offsetY = -0.3, offsetZ = 1.1, side = 'right'):
+    def getTWEForTab(self, offsetX = -0.4, offsetY = -0.4, offsetZ = 1.4, side = 'right'):
         print("Table: getting position")
         if side == 'right':
             T_W_O = self.getTable1Position()
             T_G_P = self.velma.getTf("Gr", "Pr")
             T_P_E = self.velma.getTf("Pr", "Er")
-            offsetY = 0.4
+            offsetX = -0.3
+            offsetY = 0.3
         elif side == 'left':
             T_W_O = self.getTable2Position()
             T_G_P = self.velma.getTf("Gl", "Pl")
@@ -254,6 +255,7 @@ if __name__ == "__main__":
     velma.moveCimp(side = handSide, table=True)
     
     velma.openGripper(handSide)
+    velma.moveUp(handSide)
     velma.startPos()
     print("OK")
     exitError(0)
