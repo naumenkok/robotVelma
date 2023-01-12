@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="use_kinect" default="true" />
-  <arg name="world_name" default="$(find stero_manipulation)/data/gazebo/models/stero_world_pr1.world" />  <!--stero_world_pr1-->
+  <arg name="world_name" default="$(find stero_manipulation)/data/gazebo/models/pr2v1.world" />  <!--stero_world_pr1-->
   <arg name="GAZEBO_MODEL_PATH" default="" />
   <arg name="GAZEBO_RESOURCE_PATH" default="" />
   <arg name="profile" default="dart_2ms" />
@@ -27,22 +27,12 @@
   </include>
 
   <include file="$(find velma_common)/launch/octomap_offline_server.launch">
-    <arg name="octomap_file" value="$(find stero_manipulation)/data/new_map.bt"/> <!--new_map-->
+    <arg name="octomap_file" value="$(find stero_manipulation)/data/pr2_ver1.ot"/> <!--new_map-->
   </include>
 
   <include file="$(find rcprg_gazebo_utils)/launch/gazebo_publish_ros_tf_object.launch">
-      <arg name="link_name" value="object1::link"/>
-      <arg name="frame_id" value="object1"/>
-  </include>
-
-  <include file="$(find rcprg_gazebo_utils)/launch/gazebo_publish_ros_tf_object.launch">
-      <arg name="link_name" value="table1::link"/>
-      <arg name="frame_id" value="table1"/>
-  </include>
-
-  <include file="$(find rcprg_gazebo_utils)/launch/gazebo_publish_ros_tf_object.launch">
-      <arg name="link_name" value="table2::link"/>
-      <arg name="frame_id" value="table2"/>
+      <arg name="link_name" value="cabinet::right_handle"/>
+      <arg name="frame_id" value="cabinet"/>
   </include>
   
     <arg name="rviz"     default="true"/>

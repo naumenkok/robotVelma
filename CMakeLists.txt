@@ -14,4 +14,7 @@ install(DIRECTORY launch/
   catkin_install_python(PROGRAMS scripts/pr1.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
+  catkin_install_python(PROGRAMS scripts/pr2.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 
