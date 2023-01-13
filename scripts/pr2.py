@@ -21,6 +21,7 @@ class Velma:
     
     def __init__(self, velma):
         self.velma = velma
+        self.saveRot=None
 
     def get_start_joints(self):
         return self.velma.getLastJointState()[-1]
@@ -91,30 +92,21 @@ class Velma:
             else:
                 print("Cart_imp: finished cart_imp mode")
 
-    def getTWEForObj(self, offsetX = -0.2, offsetY = 0, offsetZ = 0.1):
+    def getTWEForObj(self, saveRotation, offsetX = -0.2, offsetY = 0, offsetZ = 0.1):
         T_W_O = self.getcabinetPosition()
         sidde='r'
         T_G_P=self.velma.getTf("G"+sidde, "P"+sidde)
         T_P_E=self.velma.getTf("P"+sidde, "E"+sidde)
-        ourRotation = PyKDL.Rotation.EulerZYX(0,0,0)
-        T_W_O=PyKDL.Frame(ourRotation,T_W_O.p)
+        if saveRotation==True:
+            a=T_W_O.M
+            a.DoRotY(3.14) 
+            a.DoRotX(3.14)
+            self.saveRot=a
+            print(self.saveRot)
+        T_W_O = PyKDL.Frame(self.saveRot,T_W_O.p)
         T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(0), math.radians(90), math.radians(0)), PyKDL.Vector(offsetX, offsetY, offsetZ))
         T_W_E = T_W_O*T_O_G*T_G_P*T_P_E
         print('Gripper: found end position')
-        return T_W_E
-
-    def getTWEForTab(self, side = 'right'):
-        offsetZ = 1.4
-        T_W_O = 1#self.getTable1Position() if side == 'right' else self.getTable2Position()
-        offsetX = -0.3
-        offsetY = 0.3
-        sidde=side[0]
-        T_G_P = self.velma.getTf("G"+sidde, "P"+sidde)
-        T_P_E = self.velma.getTf("P"+sidde, "E"+sidde)
-        ourRotation = PyKDL.Rotation.EulerZYX(0,0,0)
-        T_W_O = PyKDL.Frame(ourRotation,T_W_O.p)
-        T_O_G = PyKDL.Frame(PyKDL.Rotation.RPY(math.radians(-180), math.radians(-180), math.radians(0)), PyKDL.Vector(offsetX, offsetY, offsetZ))
-        T_W_E = T_W_O*T_O_G*T_G_P*T_P_E
         return T_W_E
         
     def getIK(self, T_W_E, side = 'right'):
@@ -146,10 +138,10 @@ class Velma:
         self.velma.moveJointImpToCurrentPos(start_time=0.2)
         gc=[]
         for j in ik:
-            gc.append(qMapToConstraints(j, 0.25, group=self.velma.getJointGroup(side+"_arm_torso")))
+            gc.append(qMapToConstraints(j, 0.1, group=self.velma.getJointGroup(side+"_arm_torso")))
         for i in range(5):
             traj = self.planner.plan(self.velma.getLastJointState()[1], gc, side+"_arm_torso",max_velocity_scaling_factor=0.15,planner_id="RRTConnect", num_planning_attempts = 20)
-            if self.velma.moveJointTraj(traj, start_time=1.0, position_tol = 10.0/180.0*math.pi, velocity_tol = 10.0/180.0*math.pi)==0:
+            if self.velma.moveJointTraj(traj, start_time=1.0, position_tol = 20.0/180.0*math.pi, velocity_tol = 10.0/180.0*math.pi)==0:
                 exitError(10)
             if traj == None:
                 continue
@@ -166,7 +158,7 @@ class Velma:
         pdl=PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5))
         self.velma.moveCartImp(side, [T_B_W], [2.0], [PyKDL.Frame()], [0.5], N, N, pdl, start_time=0.5)
             
-        goal=self.getTWEForObj(offsetX,offsetY,offsetZ)
+        goal=self.getTWEForObj(False, offsetX,offsetY,offsetZ)
         self.velma.moveCartImp(side, [goal], [2.0], N, N, N, N, pdl, start_time=0.5)
         if self.velma.waitForEffector(side) != 0:
             exitError(11)
@@ -174,7 +166,7 @@ class Velma:
 
     def closeGripper(self, two_fingers, one_finger, side = 'right'):
         print('Gripper: close gripper')
-        q = [math.radians(two_fingers), math.radians(two_fingers), math.radians(one_finger), math.radians(0)]
+        q = [math.radians(0), math.radians(two_fingers), math.radians(one_finger), math.radians(0)]
         self.velma.moveHand(side,q,[1, 1, 1, 1],[0.1, 0.1, 0.1, 0.1],0.1,True)
         if self.velma.waitForHand(side) != 0:
             exitError(12)
@@ -219,15 +211,16 @@ if __name__ == "__main__":
     velma.openGripper()
     velma.jimpCimpSwitch(1)
     my_tf = velma.getcabinetPosition()
-    my_twe = velma.getTWEForObj()
+    my_twe = velma.getTWEForObj(True)
     my_ik = velma.getIK(my_twe)
     velma.getTrajectory(my_ik)
     velma.jimpCimpSwitch(0)
-    velma.moveCimp(-0.03,0,0.1)
+    velma.moveCimp(-0.03, 0.0, 0.1)
     velma.closeGripper(0, 100)
-    velma.moveCimp(-0.1,0,0.1)
-    velma.closeGripper(100, 100)
-    velma.closeGripper(100, 0)
-    velma.moveCimp(-0.3,-0.4,0.1)
+    velma.moveCimp(-0.13, 0.0, 0.1)
+    velma.closeGripper(0, 0)
+    velma.moveCimp(0.0, 0.0, 0.1)
+    velma.closeGripper(80, 0)
+    velma.moveCimp(-0.4,-0.4, 0.1)
     velma.openGripper()
     velma.startPos([start_joint_pos])
