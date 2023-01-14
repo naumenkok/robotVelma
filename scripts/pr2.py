@@ -34,7 +34,6 @@ class Velma:
         self.velma.startHomingHT()
 
     def getcabinetPosition(self):
-        print("Table1 tf transform")
         return self.velma.getTf("Wo", "cabinet")
 
     def getPlanner(self):
@@ -151,16 +150,19 @@ class Velma:
             else:
                 continue
 
-    def moveCimp(self, offsetX, offsetY, offsetZ, side = 'right'):
+    def moveCimp(self, offsetX, offsetY, offsetZ):
         print('Cimp: move in cimp')
         N=None
-        T_B_W = self.velma.getTf("Wo", "W"+side[0])
+        T_B_W = self.velma.getTf("Wo", "Wr")
+        imp=PyKDL.Wrench(PyKDL.Vector(700, 700, 700), PyKDL.Vector(150, 150, 150))
+        imp1=PyKDL.Wrench(PyKDL.Vector(300, 300, 300), PyKDL.Vector(150, 150, 150))
+        imp2=PyKDL.Wrench(PyKDL.Vector(200, 200, 200), PyKDL.Vector(150, 150, 150))
+        imp_time=[0.5, 1, 1.5]
         pdl=PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5))
-        self.velma.moveCartImp(side, [T_B_W], [2.0], [PyKDL.Frame()], [0.5], N, N, pdl, start_time=0.5)
-            
+        self.velma.moveCartImp('right', [T_B_W], [2.0], [PyKDL.Frame()], [0.5], N, N, pdl, start_time=0.5)
         goal=self.getTWEForObj(False, offsetX,offsetY,offsetZ)
-        self.velma.moveCartImp(side, [goal], [2.0], N, N, N, N, pdl, start_time=0.5)
-        if self.velma.waitForEffector(side) != 0:
+        self.velma.moveCartImp('right', [goal], [2.0], N, N, [imp, imp1, imp2], imp_time, pdl, start_time=0.5)
+        if self.velma.waitForEffector('right') != 0:
             exitError(11)
         rospy.sleep(0.5)
 
@@ -215,12 +217,12 @@ if __name__ == "__main__":
     my_ik = velma.getIK(my_twe)
     velma.getTrajectory(my_ik)
     velma.jimpCimpSwitch(0)
-    velma.moveCimp(-0.03, 0.0, 0.1)
+    velma.moveCimp(0.0, 0.0, 0.1)
     velma.closeGripper(0, 100)
     velma.moveCimp(-0.13, 0.0, 0.1)
     velma.closeGripper(0, 0)
     velma.moveCimp(0.0, 0.0, 0.1)
     velma.closeGripper(80, 0)
-    velma.moveCimp(-0.4,-0.4, 0.1)
+    velma.moveCimp(-0.3,-0.4, 0.1)
     velma.openGripper()
     velma.startPos([start_joint_pos])
