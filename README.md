@@ -33,13 +33,13 @@ Zmodyfikowałyśmy podstawowy plik velma_stero_system.launch, dodając do niego 
 W pliku pr1.py znajduje się kod źródłowy programu.
 Została zaimplementowana klasa __Velma__ zawierająca następujące metody:
 -  __homing()__ - homing robota
-- __getTable1Position()__ - funkcja do otrzymania transformaty pozycji pierwszego stoła 
-- __getTable2Position()__ - funkcja do otrzymania transformaty pozycji drugiego stoła 
+- __getTable1Position()__ - funkcja do otrzymania transformaty pozycji pierwszego stołu 
+- __getTable2Position()__ - funkcja do otrzymania transformaty pozycji drugiego stołu  
 - __getObject1Position()__ - funkcja do otrzymania transformaty pozycji obiektu
 - __getPlanner()__ - funkcja do inicjalizacji plannera z oktomapą
 - __jimpCimpSwitch()__ - funkcja do zmiany trybu na jnt_imp lub cart_imp
 - __getTWEForObj()__ - funkcja do obliczenia transformaty pozycji chwytaka dla obiektu
-- __getTWEForTab()__ - funkcja do obliczenia transformaty pozycji chwytaka dla stoła 
+- __getTWEForTab()__ - funkcja do obliczenia transformaty pozycji chwytaka dla stołu 
 - __getIK()__ - funkcja do rozwiazania zadania odwrotnej kinematyki
 - __getTrajectory()__ - funkcja do wyznaczania ścieżki i ruchu
 - __moveCimp()__ - funkcja do ruchu w trybie cart_imp
@@ -60,7 +60,7 @@ roslaunch stero_manipulation velma_stero_system.launch - uruchomienie naszego pl
 roslaunch velma_ros_plugin velma_planner.launch - uruchomienie planera
 rosrun stero_manipulation pr1.py - uruchomienie algorytmu
 roslaunch rcprg_gazebo_utils gazebo_client.launch - uruchomienie gazebo
-```
+```        
 
 ## Wizualizacja w Gazebo
 Ruch robota do kostki:
@@ -77,3 +77,60 @@ Przeniesienie kostki do drugiego stolika:
 Opuszczanie kostki i powrót do pozycji początkowej:
 <img src="./img/Screenshot from 2022-12-21 22-19-47.png" aling="center">
 
+
+# **Projekt 2 - dokumentacja**
+
+Celem projektu było napisanie programu sterującego robotem Velma,  który sprawi,
+że robotVelma otworzy drzwi szafki (jedne, o co najmniej 90 stopni),
+a następnie robot wróci do pozycji początkowej.
+
+## Mapa otoczenia
+W symulatorze Gazebo stworzyłyśmu następujący świat:
+<img src="./img/Screenshot from 2023-01-18 15-19-12.png" aling="center">
+Tak samo, jak i w pierwszym projekcie, stworzyłyśmy oktomapę środowiska, która wygląda następująco:
+<img src="./img/Screenshot from 2023-01-18 15-18-28.png" aling="center">
+<img src="./img/Screenshot from 2023-01-18 15-18-42.png" aling="center">
+
+## Plik launch
+Tak samo, jak i w pierwszym projekcie, zmodyfikowałyśmy podstawowy plik velma_stero_system.launch, dodając do niego takie rzeczy, jak:
+- uruchomienie systemu naszej konfiguracji rviz
+- publikowanie pozycji szafki
+- uruchomienie offline octomapy
+- inicjalizacja utworzonego przez nas świata
+
+## Implementacja węzła
+W pliku pr2.py znajduje się kod źródłowy programu.
+Została zaimplementowana klasa __Velma__ zawierająca następujące metody:
+- __getStartJoints()__ - homing robota
+-  __homing()__ - homing robota
+- __getCabinetPosition()__ - funkcja do otrzymania transformaty pozycji szafki 
+- __getPlanner()__ - funkcja do inicjalizacji plannera z oktomapą
+- __jimpCimpSwitch()__ - funkcja do zmiany trybu na jnt_imp lub cart_imp
+- __getTWEForCabinet()__ - funkcja do obliczenia transformaty pozycji chwytaka dla szafki
+- __getIK()__ - funkcja do rozwiazania zadania odwrotnej kinematyki
+- __getTrajectory()__ - funkcja do wyznaczania ścieżki i ruchu
+- __moveCimp()__ - funkcja do ruchu w trybie cart_imp
+- __closeGripper()__ - funkcja do zamkniecia chwytaka
+- __openGripper()__ - funkcja do otwarcia chwytaka
+- __startPos()__ - funkcja do powrótu do początkowej pozycji robota
+
+## Uruchomienie programu 
+Dla uruchomienia programu w różnych terminalach musimy wpisać nastęþujące polecenia:
+```sh
+roslaunch stero_manipulation velma_stero_system.launch - uruchomienie naszego pliku launch z rvizem
+roslaunch velma_ros_plugin velma_planner.launch - uruchomienie planera
+roslaunch rcprg_gazebo_utils gazebo_client.launch - uruchomienie gazebo
+rosrun stero_manipulation pr2.py - uruchomienie algorytmu
+```        
+
+## Wizualizacja w Gazebo
+Ruch robota do szafki:
+<img src="./img/Screenshot from 2023-01-18 15-21-13.png" aling="center">
+Chwycenie klamki:
+<img src="./img/Screenshot from 2023-01-18 15-22-04.png" aling="center">
+Uchylenie drzwi szafki jednym palcem:
+<img src="./img/Screenshot from 2023-01-18 15-22-48.png" aling="center">
+Otwieranie drzwi dwoma palcami:
+<img src="./img/Screenshot from 2023-01-18 15-23-37.png" aling="center">
+Powrót do pozycji początkowej robota:
+<img src="./img/Screenshot from 2023-01-18 15-24-34.png" aling="center">

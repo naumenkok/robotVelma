@@ -23,7 +23,7 @@ class Velma:
         self.velma = velma
         self.saveRot=None
 
-    def get_start_joints(self):
+    def getStartJoints(self):
         return self.velma.getLastJointState()[-1]
 
     def homing(self):
@@ -33,7 +33,7 @@ class Velma:
         self.velma.startHomingHP()
         self.velma.startHomingHT()
 
-    def getcabinetPosition(self):
+    def getCabinetPosition(self):
         return self.velma.getTf("Wo", "cabinet")
 
     def getPlanner(self):
@@ -91,8 +91,8 @@ class Velma:
             else:
                 print("Cart_imp: finished cart_imp mode")
 
-    def getTWEForObj(self, saveRotation, offsetX = -0.2, offsetY = 0, offsetZ = 0.1):
-        T_W_O = self.getcabinetPosition()
+    def getTWEForCabinet(self, saveRotation, offsetX = -0.2, offsetY = 0, offsetZ = 0.1):
+        T_W_O = self.getCabinetPosition()
         sidde='r'
         T_G_P=self.velma.getTf("G"+sidde, "P"+sidde)
         T_P_E=self.velma.getTf("P"+sidde, "E"+sidde)
@@ -150,18 +150,17 @@ class Velma:
             else:
                 continue
 
-    def moveCimp(self, offsetX, offsetY, offsetZ):
+    def moveCimp(self, offsetX, offsetY, offsetZ, params):
         print('Cimp: move in cimp')
-        N=None
         T_B_W = self.velma.getTf("Wo", "Wr")
-        imp=PyKDL.Wrench(PyKDL.Vector(700, 700, 700), PyKDL.Vector(150, 150, 150))
-        imp1=PyKDL.Wrench(PyKDL.Vector(300, 300, 300), PyKDL.Vector(150, 150, 150))
-        imp2=PyKDL.Wrench(PyKDL.Vector(200, 200, 200), PyKDL.Vector(150, 150, 150))
+        imp=PyKDL.Wrench(PyKDL.Vector(params[0], params[0], params[0]), PyKDL.Vector(params[3], params[3], params[3]))
+        imp1=PyKDL.Wrench(PyKDL.Vector(params[1], params[1], params[1]), PyKDL.Vector(params[3], params[3], params[3]))
+        imp2=PyKDL.Wrench(PyKDL.Vector(params[2], params[2], params[2]), PyKDL.Vector(params[3], params[3], params[3]))
         imp_time=[0.5, 1, 1.5]
         pdl=PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5))
-        self.velma.moveCartImp('right', [T_B_W], [2.0], [PyKDL.Frame()], [0.5], N, N, pdl, start_time=0.5)
-        goal=self.getTWEForObj(False, offsetX,offsetY,offsetZ)
-        self.velma.moveCartImp('right', [goal], [2.0], N, N, [imp, imp1, imp2], imp_time, pdl, start_time=0.5)
+        self.velma.moveCartImp('right', [T_B_W], [2.0], [PyKDL.Frame()], [0.5], None, None, pdl, start_time=0.5)
+        goal=self.getTWEForCabinet(False, offsetX,offsetY,offsetZ)
+        self.velma.moveCartImp('right', [goal], [2.0], None, None, [imp, imp1, imp2], imp_time, pdl, start_time=0.5)
         if self.velma.waitForEffector('right') != 0:
             exitError(11)
         rospy.sleep(0.5)
@@ -184,20 +183,10 @@ class Velma:
         else:
             print("Gripper: completion of hand movement")
 
-    def moveUp(self, side = 'right'):
-        print('Cimp: move up')
-        self.moveCimp(0,0,0)
 
     def startPos(self, joints , side = 'right'):
         self.getTrajectory(joints, side)
 
-    def moveOneJoint(self):
-        js = self.velma.getLastJointState()[1]
-        gc=Constraints()
-        gc.joint_constraints=[JointConstraint('right_arm_6_joint', 0.0, 0.01, 0.01, 0.01)]
-        traj = self.planner.plan(js, [gc], "impedance_joints",max_velocity_scaling_factor=0.15,planner_id="RRTConnect")
-        if not self.velma.moveJointTrajAndWait(traj):
-            print('error')
 
 
 if __name__ == "__main__":
@@ -208,21 +197,21 @@ if __name__ == "__main__":
     velma.getPlanner()
     #Koniec inicjalizacji
     #Zapamietaj poczatkowa poz
-    start_joint_pos = velma.get_start_joints()
+    start_joint_pos = velma.getStartJoints()
     #Przeksztalcenia
     velma.openGripper()
     velma.jimpCimpSwitch(1)
-    my_tf = velma.getcabinetPosition()
-    my_twe = velma.getTWEForObj(True)
+    my_tf = velma.getCabinetPosition()
+    my_twe = velma.getTWEForCabinet(True)
     my_ik = velma.getIK(my_twe)
     velma.getTrajectory(my_ik)
     velma.jimpCimpSwitch(0)
-    velma.moveCimp(0.0, 0.0, 0.1)
+    velma.moveCimp(0.0, 0.0, 0.1, [700, 300, 200, 150])
     velma.closeGripper(0, 100)
-    velma.moveCimp(-0.13, 0.0, 0.1)
+    velma.moveCimp(-0.13, 0.0, 0.1, [700, 300, 200, 150])
     velma.closeGripper(0, 0)
-    velma.moveCimp(0.0, 0.0, 0.1)
+    velma.moveCimp(0.0, 0.0, 0.1, [700, 300, 200, 150])
     velma.closeGripper(80, 0)
-    velma.moveCimp(-0.3,-0.4, 0.1)
+    velma.moveCimp(-0.3,-0.4, 0.1, [700, 300, 200, 150])
     velma.openGripper()
     velma.startPos([start_joint_pos])
