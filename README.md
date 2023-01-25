@@ -144,10 +144,16 @@ Dla pierwszego projektu:
 <img src="./img/bdd_world1.png" aling="center">
 <img src="./img/req1.png" aling="center">
 <img src="./img/stm_pr1.png" aling="center">
+<img src="./img/twe_ik_traj_pr1.png" aling="center">
+<img src="./img/sb_pr1.png" aling="center">
+<img src="./img/planner_octomap.png" aling="center">
 
 Dla drugiego projektu:
 <img src="./img/bdd_node2.png" aling="center">
 <img src="./img/bdd_world2.png" aling="center">
 <img src="./img/req2.png" aling="center">
 <img src="./img/stm_pr2.png" aling="center">
+<img src="./img/twe_ik_traj_pr2.png" aling="center">
+<img src="./img/sb_pr2.png" aling="center">
+<img src="./img/planner_octomap.png" aling="center">
 
