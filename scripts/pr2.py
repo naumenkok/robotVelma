@@ -152,21 +152,21 @@ class Velma:
 
     def moveCimp(self, offsetX, offsetY, offsetZ, params):
         print('Cimp: move in cimp')
-        T_B_W = self.velma.getTf("Wo", "Wr")
         imp=PyKDL.Wrench(PyKDL.Vector(params[0], params[0], params[0]), PyKDL.Vector(params[3], params[3], params[3]))
         imp1=PyKDL.Wrench(PyKDL.Vector(params[1], params[1], params[1]), PyKDL.Vector(params[3], params[3], params[3]))
         imp2=PyKDL.Wrench(PyKDL.Vector(params[2], params[2], params[2]), PyKDL.Vector(params[3], params[3], params[3]))
         imp_time=[0.5, 1, 1.5]
+        
         pdl=PyKDL.Wrench(PyKDL.Vector(5,5,5), PyKDL.Vector(5,5,5))
-        self.velma.moveCartImp('right', [T_B_W], [2.0], [PyKDL.Frame()], [0.5], None, None, pdl, start_time=0.5)
         goal=self.getTWEForCabinet(False, offsetX,offsetY,offsetZ)
+        
         self.velma.moveCartImp('right', [goal], [2.0], None, None, [imp, imp1, imp2], imp_time, pdl, start_time=0.5)
         if self.velma.waitForEffector('right') != 0:
             exitError(11)
         rospy.sleep(0.5)
 
     def closeGripper(self, two_fingers, one_finger, side = 'right'):
-        print('Gripper: close gripper')
+        print('Gripper: move gripper')
         q = [math.radians(0), math.radians(two_fingers), math.radians(one_finger), math.radians(0)]
         self.velma.moveHand(side,q,[1, 1, 1, 1],[0.1, 0.1, 0.1, 0.1],0.1,True)
         if self.velma.waitForHand(side) != 0:
