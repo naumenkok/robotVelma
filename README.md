@@ -134,3 +134,20 @@ Otwieranie drzwi dwoma palcami:
 <img src="./img/Screenshot from 2023-01-18 15-23-37.png" aling="center">
 Powrót do pozycji początkowej robota:
 <img src="./img/Screenshot from 2023-01-18 15-24-34.png" aling="center">
+
+
+
+## Diagramy SysML
+<img src="./img/bdd_velma.png" aling="center">
+Dla pierwszego projektu:
+<img src="./img/bdd_node1.png" aling="center">
+<img src="./img/bdd_world1.png" aling="center">
+<img src="./img/req1.png" aling="center">
+<img src="./img/stm_pr1.png" aling="center">
+
+Dla drugiego projektu:
+<img src="./img/bdd_node2.png" aling="center">
+<img src="./img/bdd_world2.png" aling="center">
+<img src="./img/req2.png" aling="center">
+<img src="./img/stm_pr2.png" aling="center">
+
